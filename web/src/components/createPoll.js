@@ -1,12 +1,12 @@
-import React, { Fragment, useReducer, useState, useEffect } from "react";
+import React, { Fragment, useReducer, useState } from "react";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 
 const endpoints = {
-    create: "http://localhost:3000/polls"
-};
-
+    polls: "/polls"
+  };
+  
 
 const initialState = { loading: false, error: null, success: null, submitting: null };
 function reducer(state, action) {
@@ -24,8 +24,6 @@ function reducer(state, action) {
             return state;
     }
 }
-
-
 
 export default function CreatePoll() {
     const history = useHistory();
@@ -48,11 +46,14 @@ export default function CreatePoll() {
         setIsSubmitting(true);
 
         try {
-            console.log("Submitting:", data);
-            alert(JSON.stringify(data))
-            const result = await axios.post(endpoints.create, {
-                inputValues: data.formData
-            });
+            const url = process.env.REACT_APP_BACKEND + endpoints.polls
+            alert(url)
+            const result = await axios({
+                method: 'post',
+                url: url,
+                data: data
+              });
+              console.log(result)
             history.push("/polls/" + result.data._id)
         } catch (error) {
             console.log("error", error);
@@ -74,25 +75,23 @@ export default function CreatePoll() {
                 {/* errors will return when field validation fails  */}                
                 <div className="pollChoices">
                     <input
-                        className={['choice first-of-type']}
+                        className={['choice']}
                         placeholder="Awesome"
-                        value="Awesome"
-                        name="poll[choices][0][text]"
+                        name="choices[0][text]"
                         ref={register({ required: true })} 
                     >
                     </input>
+                    <div className="divider"></div>
                     <input
                         className={['choice']}
                         placeholder="Great"
-                        value="Great"
-                        name="poll[choices][1][text]"
+                        name="choices[1][text]"
                         ref={register({ required: true })} 
                     >
                     </input>
                 </div>
                 <input className="pollSubmit" type="submit" />
             </form>
-            );
             <div className="creationStatus">
                 {state.submitting && <p>submitting...</p>}
                 {state.error && <p>Error saving!</p>}

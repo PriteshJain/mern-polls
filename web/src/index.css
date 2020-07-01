@@ -1,6 +1,7 @@
 body {
   margin: 0;
 }
+
 .App {
   display: flex;
   flex-direction: column;  
@@ -17,6 +18,7 @@ body {
   ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   height: 100vh; 
 }
+
 .appHeader {
   font-size: 16px;
 }
@@ -34,14 +36,14 @@ body {
   font-size: 48px;
   color: #fff;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .pollChoices {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-width: 400px;
-  height: 100px;
+  min-height: 100px;
   border-radius: 4px;
   background: white;
   -webkit-box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
@@ -73,7 +75,7 @@ body {
   outline: none;  
 }
 
-.choice p, input.choice, input.pollSubmit {
+.choice p, input.choice, input.posllSubmit {
   margin: 0;  
   background: linear-gradient(
     to right,
@@ -82,13 +84,14 @@ body {
   ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  max-width: 100px;
 }
 
 .choice:disabled {
   cursor: auto;
 }
 
-.choice:first-of-type::after {
+.choice:first-of-type::after, .divider {
   height: 50%;
   width: 1px;
   background: rgb(75, 66, 66);
@@ -125,8 +128,8 @@ form input.pollTitle {
   height: 3rem;
   width: 100%;
   text-align: center;
-  font-size: 16px;
-  margin: 0 0 8px 0;
+  font-size: 32px;
+  margin: 0 0 20px 0;
   padding: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -138,13 +141,8 @@ form input.pollTitle {
   transition: box-shadow .3s, border .3s, -webkit-box-shadow .3s;  
 }
 
-form input.choice {
-    margin-left: 10px;
-}
-
 form .pollSubmit {
-  margin-top: 20px;
-  margin-left: 10px;
+  margin: 40px 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -177,7 +175,32 @@ form .pollSubmit {
 }
 form ::-webkit-input-placeholder {
   text-align: center;
+  color: whitesmoke;
 }
 form  :-moz-placeholder {
   text-align: center;
+  color: whitesmoke;
+}
+
+form .divider {
+  position: relative;
+  height: 50%;
+  width: 1px;
+  background: rgb(75, 66, 66);
+  right: 0;  
+  content: "";
+}
+.poolList a {
+  font-size: 18px;
+}
+.poolList a:link {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.poolList a:visited {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
 }

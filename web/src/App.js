@@ -1,6 +1,7 @@
 import React from 'react';
 import './index.css';
 import Poll from "./components/poll";
+import List from "./components/list";
 import {
   BrowserRouter as Router,
   Switch,
@@ -9,14 +10,6 @@ import {
   useRouteMatch
 } from "react-router-dom";
 import CreatePoll from './components/createPoll';
-
-const initPoll = {
-  title: "Will this demo work?",
-  choices: [
-    { name: "YESSSS", votes: 0, classes: ['choice'] },
-    { name: "NAAHHH", votes: 0, classes: ['choice'] }
-  ]
-}
 
 function App() {
   return (
@@ -31,18 +24,21 @@ function App() {
               <li>
                 <Link to="/create">Create Poll</Link>
               </li>
+              <li>
+                <Link to="/polls/random">Random Poll</Link>
+              </li>
             </ul>
           </nav>
         <div className="appBody">
           <Switch>            
             <Route exact path="/">
-              <Home />
+              <List />
             </Route>
             <Route exact path="/create">
               <CreatePoll />
             </Route>            
             <Route path="/polls/:id" >
-              <Poll poll={initPoll} />
+              <Poll />
             </Route>
           </Switch>
         </div>
@@ -52,11 +48,4 @@ function App() {
   );
 }
 
-function Home() {
-  return (
-    <div>
-      Home
-    </div>
-  );
-}
 export default App;
