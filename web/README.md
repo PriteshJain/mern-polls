@@ -1,68 +1,486 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# mern-polls backend
+### Prerequisite for the project
+-  Nodejs with Npm installed.
+   Can be found at https://nodejs.org/en/download/
+- Visual studio code. with command line `code` enabled.
+- Create Account with mongodb atlas and create a cluster
+- Github account setup with ssh keys added in account.
 
-## Available Scripts
+**npm** is a node package manager for nodejs.
+Allows you to download and install node libraries in project.
 
-In the project directory, you can run:
 
-### `npm start`
+###  1. Create project dir.
+```bash    
+    # Make directory
+    mkdir nodejs-polls
+    
+    # change directory
+    cd nodejs-polls
+```
+### Setup git
+```bash    
+    git init
+```
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Create web directory
+```bash    
+    npx create-react-app web
+    cd web 
+```
+### Setup components.
+```bash    
+    # make project nodejs ready
+    npm init -y
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+    # install web server and ODM
+    npm install -S express mongoose
 
-### `npm test`
+    # Open the project in Vs code IDE 
+    code .
+```
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Create app server
+```javascript
+    // server.js
+    const express = require('express');
+    const app = express();
 
-### `npm run build`
+    const PORT = process.env.PORT || 5000;
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    // configure body parser for AJAX requests
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+    // routes
+    app.get('/', (req, res) => {
+        res.send('Hello from Nodejs');
+    });
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    // Bootstrap server
+    app.listen(PORT, () => {
+        console.log(`Server listening on port ${PORT}.`);
+    });
+```
 
-### `npm run eject`
+###  run the project 
+```bash   
+    npm start
+    # open localhost:5000 in browser
+ 
+    # You should see Hello from Nodejs
+```
+###  install nodemon  
+```bash   
+    npm install -g nodemon
+```
+###  verify if the prject is running propertly
+    Go to localhost:3000
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### add env support
+```bash    
+    # install .env support
+    npm install dotenv
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    # add below to server.js imports
+    require('dotenv').config() 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+    touch .env       
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### initalize mongoose ODM
+```bash    
 
-## Learn More
+    # Add mongodb URI to .env
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    // .env
+    MONGO_DB=mongodb://localhost:27017    
+    
+    #  create configs directory
+    mkdir config
+    # Create file config/db.js
+    touch config/db.js
+```    
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```javascript
+    // db.js 
+    const mongoose = require('mongoose');
+    const connection = mongoose.connection;
+    const uri = process.env.MONGO_DB;
 
-### Code Splitting
+    mongoose.connect(uri, { useNewUrlParser: true, useCreateIndex: true });
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+    connection.once('open', () => {
+    console.log(
+        "MongoDB database connection established successfully");
+    })
+    module.exports = mongoose;
+```
 
-### Analyzing the Bundle Size
+### create projects dir
+    mkdir models 
+    mkdir services
+    mkdir controllers
+    mkdir routes
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+###  add database models    
+    // create models/poll.js
+    
+```javascript    
+    // poll.js
+    const mongoose = require('mongoose');
+    const Schema = mongoose.Schema;
+    const { Number } = require('mongoose');
 
-### Making a Progressive Web App
+    const choiceSchema = new Schema({
+        text: {
+            type: String,
+            required: true
+        },
+        votes: {
+            type: Number,
+            required: true,
+            default: 0
+        }
+    });
+    const Choice = mongoose.model('Choice', choiceSchema);
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+    const pollSchema = new Schema({
+        title: {
+            type: String,
+            required: true
+        },
+        choices: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Choice'		
+        }]
+    });
 
-### Advanced Configuration
+    const Poll = mongoose.model('Poll', pollSchema);
+    module.exports = {
+        Poll, 
+        Choice
+    };
+```
+###  add routes
+```javascript
+    // routes/index.js
+    const express = require('express')
+    var app = express()
+    const PollController = require("../controllers/pollController")
+    const pollController = new PollController()
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+    app.post('/', pollController.create);
 
-### Deployment
+    app.get('/:id', pollController.show);
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+    app.get('/', pollController.list);
 
-### `npm run build` fails to minify
+    app.post('/:id/vote', pollController.vote);
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+    module.exports = app;
+```
+###  add controllers
+```javascript
+    // controllers/pollController.js
+
+    const PollService = require("../services/pollService")
+
+    class PollController {
+        pollService;
+        
+        constructor() {
+            this.pollService = new PollService();
+        }
+        
+        create = async (req, res) => {
+            const response =  await this.pollService.create(req.body)
+            res.status(201).json(response)
+        }
+
+        vote = async (req, res) => {
+            const response =  await this.pollService.create(req.body)
+            res.status(201).json(response)
+        }
+        
+        show = async(req, res) => {
+            const response = await this.pollService.get(req.params.id)
+            res.status(200).json(response)
+        }
+
+        list = async (req, res) => {
+            const response =  await this.pollService.all()
+            res.status(200).json(response)
+        }
+
+        vote = async(req, res) => {
+            const response = await this.pollService.vote(req.params.id, req.body)
+            res.status(200).json(response)
+        }
+    }
+
+    module.exports = PollController;
+```
+
+###  add services
+```javascript
+    // services/pollServices.js
+    const {Poll, Choice} = require("../models/poll")
+
+    class PollService {
+        create = async (poll) => {
+            const newPoll = new Poll(poll)
+            await newPoll.save()
+            return newPoll;
+        }
+
+        all = async () => {
+            const results = await Poll.find()
+            return results;
+        }
+
+        get = async (id) => {
+            return await Poll.findById(id)
+        }
+
+        vote = async (id, pollBody) => {
+            // find poll from database 
+            const poll = await this.get(id)
+
+            // find voted choice
+            const votedChoice = pollBody.choices.find((choice) => choice.voted)        
+
+            // update vote count
+            const choice =  poll.choices.find((c) => c._id == votedChoice._id);
+            choice.votes = choice.votes + 1
+
+            // save vote count
+            await poll.save();
+
+            // return update poll
+            return poll;
+        }
+    }
+
+    module.exports = PollService;
+```
+###  Add stylesheet   
+```css
+body {
+  margin: 0;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;  
+  background: #f2709c; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #ff9472,
+    #f2709c
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #ff9472,
+    #f2709c
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  height: 100vh; 
+}
+
+.appHeader {
+  font-size: 16px;
+}
+
+.appBody {
+  margin-top: 100px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;  
+}
+
+.pollTitle {
+  font-size: 48px;
+  color: #fff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.pollChoices {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  border-radius: 4px;
+  background: white;
+  -webkit-box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+  -moz-box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+  box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+}
+
+.choice {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  color: black;
+  height: 100%;
+  font-size: 18px;
+  text-align: center;
+  cursor: pointer;
+  letter-spacing: 1px;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently */
+  background: transparent;
+  border: none;
+  outline: none;  
+}
+
+.choice p, input.choice, input.posllSubmit {
+  margin: 0;  
+  background: linear-gradient(
+    to right,
+    #ff9472,
+    #f2709c
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  max-width: 100px;
+}
+
+.choice:disabled {
+  cursor: auto;
+}
+
+.choice:first-of-type::after, .divider {
+  height: 50%;
+  width: 1px;
+  background: rgb(75, 66, 66);
+  right: 0;
+  position: absolute;
+  content: "";
+}
+
+.active {
+  flex: 2.2;
+  transition: 500ms ease-in-out;
+}
+
+.nav li {
+  display: inline;
+  margin: 10px;
+  font-size: 18px;  
+}
+.nav li a {
+  color: #fafafa;  
+}
+
+.form label {
+  color: #fff;
+  font-size: 22px;  
+}
+
+form input.pollTitle {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #fafafa;
+  border-radius: 0;
+  outline: none;
+  height: 3rem;
+  width: 100%;
+  text-align: center;
+  font-size: 32px;
+  margin: 0 0 20px 0;
+  padding: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+  -webkit-transition: border .3s, -webkit-box-shadow .3s;
+  transition: border .3s, -webkit-box-shadow .3s;
+  transition: box-shadow .3s, border .3s;
+  transition: box-shadow .3s, border .3s, -webkit-box-shadow .3s;  
+}
+
+form .pollSubmit {
+  margin: 40px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 400px;
+  height: 50px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  -webkit-box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+  -moz-box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+  box-shadow: 0px 32px 58px -28px rgba(0, 0, 0, 0.28);
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  color: black;
+  font-size: 18px;
+  text-align: center;
+  cursor: pointer;
+  letter-spacing: 1px;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently */
+  border: none;
+  outline: none;  
+}
+form ::-webkit-input-placeholder {
+  text-align: center;
+  color: whitesmoke;
+}
+form  :-moz-placeholder {
+  text-align: center;
+  color: whitesmoke;
+}
+
+form .divider {
+  position: relative;
+  height: 50%;
+  width: 1px;
+  background: rgb(75, 66, 66);
+  right: 0;  
+  content: "";
+}
+.poolList a {
+  font-size: 18px;
+}
+.poolList a:link {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.poolList a:visited {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+```
+### deploy to heroku
+```bash    
+    # Deploy web
+    cd web
+    git init
+    git add . -A 
+    git commit -m "Push to heroku"
+    heroku create <ANYAppNAME> --buildpack mars/create-react-app
+    heroku config:set REACT_APP_BACKEND=""    
+    git push heroku master
+```    
